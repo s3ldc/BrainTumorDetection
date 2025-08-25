@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>MRI Tumor Detection Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background: #f5f7fb;
+    }
+
+    .page-title {
+      font-weight: 700;
+      color: #1a73e8;
+    }
+
+    .subtitle {
+      color: #5f6368;
+    }
+
+    .card {
+      border: none;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+    }
+
+    .card h5 {
+      font-weight: 600;
+      color: #374151;
+    }
+
+    .chart-img {
+      width: 100%;
+      border-radius: 12px;
+    }
+
+    .stat {
+      font-size: 1.1rem;
+    }
+
+    .badge-kpi {
+      font-size: .9rem;
+      padding: .6em .8em;
+      border-radius: 8px;
+    }
+
+    .btn-home {
+      background: #1a73e8;
+      color: #fff;
+      border-radius: 10px;
+    }
+
+    .btn-home:hover {
+      background: #0c60d8;
+      color: #fff;
+    }
+
+    table {
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    thead th {
+      background: #1a73e8;
+      color: #fff;
+    }
+
+    tbody tr:nth-child(odd) {
+      background: #f9fbff;
+    }
+
+    /* Gradient badge colors */
+    .bg-success {
+      background: linear-gradient(45deg, #4caf50, #81c784) !important;
+    }
+
+    .bg-primary {
+      background: linear-gradient(45deg, #1a73e8, #64b5f6) !important;
+    }
+
+    .bg-secondary {
+      background: linear-gradient(45deg, #757575, #bdbdbd) !important;
+    }
+
+    /* Section headings */
+    .section-title {
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      font-weight: 700;
+      color: #1a73e8;
+      border-left: 6px solid #1a73e8;
+      padding-left: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container py-4">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <h1 class="page-title mb-1">MRI Tumor Detection Dashboard</h1>
+        <div class="subtitle">Performance analysis of deep learning model</div>
+      </div>
+      <div>
+        <a href="{{ url_for('index') }}" class="btn btn-home">⬅ Back to Home</a>
+      </div>
+    </div>
+
+    <!-- Dataset Distribution -->
+    {% if charts['dataset_distribution'] %}
+    <h3 class="section-title">📂 Dataset Analysis</h3>
+    <div class="row g-4">
+      <div class="col-12">
+        <div class="card p-3">
+          <h5>Dataset Distribution</h5>
+          <img class="chart-img" src="{{ charts['dataset_distribution'] }}" alt="Dataset Distribution" />
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Training Performance -->
+    {% if history_available %}
+    <h3 class="section-title">📊 Training Performance</h3>
+    <div class="row g-4">
+      <div class="col-md-6">
+        <div class="card p-3">
+          <h5>Training vs Validation Accuracy</h5>
+          <img class="chart-img" src="{{ charts['accuracy'] }}" alt="Accuracy Chart" />
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card p-3">
+          <h5>Training vs Validation Loss</h5>
+          <img class="chart-img" src="{{ charts['loss'] }}" alt="Loss Chart" />
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4 mt-1">
+      <div class="col-md-6">
+        <div class="card p-3">
+          <h5>Combined Accuracy & Loss</h5>
+          <img class="chart-img" src="{{ charts['combined'] }}" alt="Combined Chart" />
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card p-3">
+          <h5>Summary Statistics</h5>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              Best Training Accuracy
+              <span class="badge bg-success badge-kpi">{{ '%.2f'|format(summary.best_train_acc*100) }}%</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              Best Validation Accuracy
+              <span class="badge bg-primary badge-kpi">{{ '%.2f'|format(summary.best_val_acc*100) }}%</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              Lowest Training Loss
+              <span class="badge bg-secondary badge-kpi">{{ '%.4f'|format(summary.lowest_train_loss) }}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              Lowest Validation Loss
+              <span class="badge bg-secondary badge-kpi">{{ '%.4f'|format(summary.lowest_val_loss) }}</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Model Evaluation -->
+    <h3 class="section-title">🧪 Model Evaluation</h3>
+    <div class="row g-4 mt-1">
+      <div class="col-md-6">
+        <div class="card p-3">
+          <h5>ROC Curve</h5>
+          <img class="chart-img" src="{{ charts['roc_curve'] }}" alt="ROC Curve" />
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card p-3">
+          <h5>Confusion Matrix</h5>
+          <img class="chart-img" src="{{ charts['confusion_matrix'] }}" alt="Confusion Matrix" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Classification Report -->
+    <div class="row g-4 mt-1">
+      <div class="col-12">
+        <div class="card p-3">
+          <h5>Classification Report</h5>
+          <div class="table-responsive">
+            <table class="table table-bordered table-striped mb-0 text-center">
+              <thead>
+                <tr>
+                  <th class="text-start">Class</th>
+                  <th>Precision</th>
+                  <th>Recall</th>
+                  <th>F1-Score</th>
+                  <th>Support</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for label, metrics in classification_report.items() %}
+                  {% if metrics is mapping and label not in ["accuracy", "macro avg", "weighted avg"] %}
+                  <tr>
+                    <td class="text-start">{{ label }}</td>
+                    <td>{{ '%.2f'|format(metrics['precision']) }}</td>
+                    <td>{{ '%.2f'|format(metrics['recall']) }}</td>
+                    <td>{{ '%.2f'|format(metrics['f1-score']) }}</td>
+                    <td>{{ metrics['support'] }}</td>
+                  </tr>
+                  {% endif %}
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overall Metrics -->
+    <div class="row g-4 mt-1">
+      <div class="col-12">
+        <div class="card p-3">
+          <h5>Overall Metrics</h5>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">Accuracy: {{ '%.2f'|format(classification_report['accuracy']*100) }}%</li>
+            <li class="list-group-item">Macro Avg F1: {{ '%.2f'|format(classification_report['macro avg']['f1-score']) }}</li>
+            <li class="list-group-item">Weighted Avg F1: {{ '%.2f'|format(classification_report['weighted avg']['f1-score']) }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+
+</html>
