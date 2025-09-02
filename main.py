@@ -257,87 +257,143 @@ import json
 def dashboard():
     charts = {}
     summary = {}
+    classification_report_data = {}
     history_available = False
-    history_data = {}
 
-    # -------- Training history (if available) --------
-    if os.path.exists("training_history.json"):
-        with open("training_history.json", "r") as f:
-            history_data = json.load(f)
+    # --- Dataset Distribution ---
+    charts['dataset_distribution'] = os.path.join("static", "charts", "dataset_distribution.png")
+
+    # --- Training History ---
+    history_path = "history.json"
+    if os.path.exists(history_path):
+        with open(history_path, "r") as f:
+            history = json.load(f)
         history_available = True
 
-        # Extract metrics
-        train_acc  = history_data.get('sparse_categorical_accuracy') or history_data.get('accuracy')
-        val_acc    = history_data.get('val_sparse_categorical_accuracy') or history_data.get('val_accuracy')
-        train_loss = history_data.get('loss')
-        val_loss   = history_data.get('val_loss')
+        # Detect correct accuracy keys
+        acc_key = None
+        val_acc_key = None
+        for key in history.keys():
+            if "acc" in key.lower() and not key.lower().startswith("val"):
+                acc_key = key
+            if "val_acc" in key.lower() or "val_accuracy" in key.lower():
+                val_acc_key = key
 
+        # Plot Accuracy
+        if "sparse_categorical_accuracy" in history and "val_sparse_categorical_accuracy" in history:
+            plt.figure()
+            plt.plot(history["sparse_categorical_accuracy"], label="Train Accuracy")
+            plt.plot(history["val_sparse_categorical_accuracy"], label="Val Accuracy")
+            plt.legend()
+            plt.title("Training vs Validation Accuracy")
+            acc_path = os.path.join("static", "charts", "accuracy.png")
+            plt.savefig(acc_path)
+            charts['accuracy'] = acc_path
+            plt.close()
+            print(f" Accuracy chart saved at: {acc_path}")
+        else:
+            print(" Accuracy keys not found in history.")
+
+        # Plot Loss
+        plt.figure()
+        plt.plot(history["loss"], label="Train Loss")
+        plt.plot(history["val_loss"], label="Val Loss")
+        plt.legend()
+        plt.title("Training vs Validation Loss")
+        loss_path = os.path.join("static", "charts", "loss.png")
+        plt.savefig(loss_path)
+        charts['loss'] = loss_path
+        plt.close()
+
+        # Combined chart
+        plt.figure(figsize=(6, 4))
+        if acc_key and val_acc_key:
+            plt.plot(history[acc_key], label="Train Acc")
+            plt.plot(history[val_acc_key], label="Val Acc")
+        plt.plot(history["loss"], label="Train Loss")
+        plt.plot(history["val_loss"], label="Val Loss")
+        plt.legend()
+        plt.title("Combined Metrics")
+        combined_path = os.path.join("static", "charts", "combined.png")
+        plt.savefig(combined_path)
+        charts['combined'] = combined_path
+        plt.close()
+
+        # Summary statistics
         summary = {
-            "best_train_acc": max(train_acc),
-            "best_val_acc": max(val_acc),
-            "lowest_train_loss": min(train_loss),
-            "lowest_val_loss": min(val_loss)
+            "best_train_acc": max(history[acc_key]) if acc_key else 0,
+            "best_val_acc": max(history[val_acc_key]) if val_acc_key else 0,
+            "lowest_train_loss": min(history["loss"]),
+            "lowest_val_loss": min(history["val_loss"]),
         }
 
-        # Accuracy plot
-        plt.figure()
-        plt.plot(train_acc, label="Train Accuracy")
-        plt.plot(val_acc, label="Val Accuracy")
-        plt.legend()
-        acc_path = "static/accuracy.png"
-        plt.savefig(acc_path); plt.close()
-        charts["accuracy"] = acc_path
+    # --- Test Predictions ---
+    preds_path = "test_predictions.npy"
+    labels_path = "test_labels.npy"
+    if os.path.exists(preds_path) and os.path.exists(labels_path):
+        y_pred = np.load(preds_path)
+        y_true = np.load(labels_path)
 
-        # Loss plot
-        plt.figure()
-        plt.plot(train_loss, label="Train Loss")
-        plt.plot(val_loss, label="Val Loss")
-        plt.legend()
-        loss_path = "static/loss.png"
-        plt.savefig(loss_path); plt.close()
-        charts["loss"] = loss_path
+        # Convert logits to class predictions
+        if y_pred.ndim > 1:
+            y_pred_classes = np.argmax(y_pred, axis=1)
+        else:
+            y_pred_classes = (y_pred > 0.5).astype(int)
 
-        # Combined plot
-        plt.figure()
-        plt.plot(train_acc, label="Train Accuracy")
-        plt.plot(val_acc, label="Val Accuracy")
-        plt.plot(train_loss, label="Train Loss")
-        plt.plot(val_loss, label="Val Loss")
-        plt.legend()
-        comb_path = "static/combined.png"
-        plt.savefig(comb_path); plt.close()
-        charts["combined"] = comb_path
+        from sklearn.metrics import classification_report, confusion_matrix, roc_curve, auc
 
-    # -------- Evaluation metrics (conf matrix, ROC, report) --------
-    report_path = "classification_report.json"
-    cm_path     = os.path.join("static", "charts", "confusion_matrix.png")
-    roc_path    = os.path.join("static", "charts", "roc_curve.png")
+        class_names = sorted(os.listdir(os.path.join("MRI Images", "Testing")))
+        classification_report_data = classification_report(
+            y_true, y_pred_classes, target_names=class_names, output_dict=True
+        )
 
-    if not (os.path.exists(report_path) and os.path.exists(cm_path) and os.path.exists(roc_path)):
-        eval_results = compute_eval_and_plots()
-        # Save classification report JSON
-        with open(report_path, "w") as f:
-            json.dump(eval_results['report'], f)
+        # Confusion Matrix
+        cm = confusion_matrix(y_true, y_pred_classes)
+        plt.figure(figsize=(5, 4))
+        sns.heatmap(cm, annot=True, fmt="d", cmap="Blues",
+                    xticklabels=class_names, yticklabels=class_names)
+        plt.xlabel("Predicted")
+        plt.ylabel("True")
+        cm_path = os.path.join("static", "charts", "confusion_matrix.png")
+        plt.savefig(cm_path)
+        charts['confusion_matrix'] = cm_path
+        plt.close()
 
-    # Load report
-    with open(report_path, "r") as f:
-        cls_report = json.load(f)
+        # ROC Curve
+        if y_pred.ndim > 1 and y_pred.shape[1] > 1:
+            # Multi-class ROC
+            from sklearn.preprocessing import label_binarize
+            y_true_bin = label_binarize(y_true, classes=np.arange(len(class_names)))
+            plt.figure()
+            for i in range(len(class_names)):
+                fpr, tpr, _ = roc_curve(y_true_bin[:, i], y_pred[:, i])
+                roc_auc = auc(fpr, tpr)
+                plt.plot(fpr, tpr, lw=2, label=f"{class_names[i]} (AUC={roc_auc:.2f})")
+            plt.plot([0, 1], [0, 1], "--", color="gray")
+            plt.legend()
+            plt.title("ROC Curve")
+        else:
+            # Binary ROC
+            fpr, tpr, _ = roc_curve(y_true, y_pred[:, 1] if y_pred.ndim > 1 else y_pred)
+            roc_auc = auc(fpr, tpr)
+            plt.figure()
+            plt.plot(fpr, tpr, label=f"AUC = {roc_auc:.2f}")
+            plt.plot([0, 1], [0, 1], "--", color="gray")
+            plt.legend()
+            plt.title("ROC Curve")
 
-    # Assign charts
-    charts["roc_curve"] = "static/charts/roc_curve.png"
-    charts["confusion_matrix"] = "static/charts/confusion_matrix.png"
+        roc_path = os.path.join("static", "charts", "roc_curve.png")
+        plt.savefig(roc_path)
+        charts['roc_curve'] = roc_path
+        plt.close()
 
-    # ✅ Generate dataset distribution and assign
-    charts["dataset_distribution"] = plot_dataset_distribution()
-
-    return render_template("dashboard.html",
-                           charts=charts,
-                           summary=summary,
-                           classification_report=cls_report,
-                           history_available=history_available)
-
-
-
+    return render_template(
+        "dashboard.html",
+        charts=charts,
+        summary=summary,
+        classification_report=classification_report_data,
+        history_available=history_available
+    )
 
 
 if __name__ == '__main__':
