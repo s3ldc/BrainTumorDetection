@@ -86,18 +86,6 @@ A Flask web application allows users to upload MRI images for prediction and pro
 
 ---
 
-## Screenshots
-
-### Homepage (MRI Upload & Detection)
-![Homepage Screenshot](your-image-link-here)
-
-### Model Evaluation Dashboard
-![Dashboard Screenshot](your-image-link-here)
-
-*(Replace links with your GitHub image URLs after uploading screenshots.)*
-
----
-
 ## Project Structure
 
 ```
@@ -130,7 +118,7 @@ CAPSTONE_PROJECT/
 
 ### 1. Clone the repository
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/s3ldc/BrainTumorDetection
 cd CAPSTONE_PROJECT
 ```
 
