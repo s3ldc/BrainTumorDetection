@@ -11,7 +11,6 @@ This project was developed as part of the **MCA Capstone (CMR University, 2023â€
 - [Features](#features)
 - [Tech Stack](#tech-stack)
 - [Dataset](#dataset)
-- [Screenshots](#screenshots)
 - [Project Structure](#project-structure)
 - [Installation](#installation)
 - [Usage](#usage)
