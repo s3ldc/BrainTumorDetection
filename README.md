@@ -1,13 +1,14 @@
 MRI Tumor Detection using Deep Learning
 
-This repository contains an end-to-end deep learning system for automatic MRI brain tumor classification. The project integrates a Convolutional Neural Network (EfficientNet-B0) with a Flask-based web application to provide real-time tumor predictions and an interactive dashboard for model evaluation and dataset analysis.
+This repository contains an end-to-end deep learning system for automatic MRI brain tumor classification. The project uses a Convolutional Neural Network (EfficientNet-B0) and a Flask-based web application to provide real-time tumor predictions and an interactive evaluation dashboard.
 
-This work was developed as part of a Capstone Project (MCA, CMR University, 2023–2025).
+This work was developed as part of a Capstone Project (MCA – CMR University, 2023–2025).
 
 Features
 
 Deep Learning Model (EfficientNet-B0)
-Trained to classify MRI images into four categories:
+
+Classifies MRI scans into four classes:
 
 glioma
 
@@ -17,27 +18,27 @@ notumor
 
 pituitary
 
-Flask-Powered Application
+Flask Web Application
 
-Upload MRI images and run on-demand predictions.
+Upload MRI images and receive predictions instantly.
 
-Displays predicted class and confidence score.
+Displays prediction probability & tumor class.
 
 Interactive Dashboard
 
-Dataset distribution visualization
+Dataset distribution charts
 
 ROC curve
 
 Confusion matrix
 
-Classification report (precision, recall, F1-score)
+Classification report
 
-Training history charts (accuracy & loss)
+Training accuracy & loss curves
 
-Artifacts Included
+Included Artifacts
 
-modelfinal.h5 — final trained model
+modelfinal.h5 (trained model)
 
 classification_report.json
 
@@ -69,43 +70,31 @@ CAPSTONE_PROJECT/
 └── README.md
 
 Tech Stack
-Deep Learning
 
-TensorFlow / Keras
+Deep Learning:
+TensorFlow, Keras, EfficientNet-B0, NumPy, OpenCV, Pillow
 
-EfficientNet-B0 transfer learning
+Web App:
+Flask, HTML5, CSS3, JavaScript, Bootstrap
 
-NumPy, OpenCV, Pillow
-
-Web Application
-
-Flask
-
-HTML5, CSS3, JavaScript, Bootstrap
-
-Visualization
-
-Matplotlib
-
-Seaborn
-
-JSON-based charts
+Visualization:
+Matplotlib, Seaborn
 
 Dataset
 
-Publicly available Brain MRI dataset (e.g., Kaggle / BRATS-style collections)
+Publicly available Brain MRI datasets (e.g., Kaggle / BRATS-style).
 
 ~3,000–4,000 images
 
-Four classes: glioma, meningioma, notumor, pituitary
+Four tumor-related classes
 
-Preprocessing pipeline:
+Preprocessing steps:
 
 Resize to 224×224
 
 Normalize pixel values
 
-Data augmentation (rotation, flip, zoom)
+Apply augmentation (training only)
 
 Split:
 
@@ -134,7 +123,7 @@ source venv/bin/activate
 
 3. Install dependencies
 
-Create a file requirements.txt with the following suggested contents:
+Create a requirements.txt containing:
 
 flask>=2.0
 tensorflow>=2.6
@@ -148,7 +137,7 @@ seaborn
 gunicorn
 
 
-Then install:
+Install:
 
 pip install -r requirements.txt
 
@@ -159,38 +148,36 @@ Start the Flask server:
 python main.py
 
 
-The application will be available at:
+Visit the app at:
 
 http://127.0.0.1:5000/
 
-Pages:
+Available Pages
 
-Landing Page: Upload MRI → Predict tumor class
+Homepage: Upload MRI → Get prediction
 
-Dashboard: View ROC curve, confusion matrix, dataset stats, reports
+Dashboard: Evaluation metrics, dataset charts, and model reports
 
 API Usage
-Prediction Endpoint
+Prediction API
 POST /predict
 
 
 Form Data:
-file → MRI image (jpg/png)
+file → MRI image file
 
-Response Example:
+Sample Response
 
 {
   "prediction": "glioma",
   "confidence": 0.9873
 }
 
-Model Performance (Summary)
+Model Performance Overview
 
 AUC: 0.99–1.00 across all classes
 
-Accuracy: Very high across training & testing
-
-Confusion Matrix: Strong diagonal values; minimal misclassification
+Accuracy: High on both training & testing sets
 
 Classification Report:
 
@@ -198,47 +185,47 @@ Precision: 0.93–0.99
 
 Recall: 0.93–1.00
 
-F1-Score: 0.94–0.99
+F1 Score: 0.94–0.99
 
-Visualizations are available on the dashboard.
+Visual charts are available on the dashboard.
 
 Training Workflow (Notebook)
 
-The notebook (Brain-Tumor_Detection.ipynb) contains:
+The notebook (Brain-Tumor_Detection.ipynb) performs:
 
-Dataset loading & preprocessing
+Dataset loading
 
-EfficientNet-B0 model creation
+Preprocessing & augmentation
 
-Training with augmentation, callbacks (checkpoint, early stopping)
+EfficientNet-B0 model setup
 
-Evaluation (ROC, confusion matrix, report)
+Training with callbacks
 
-Saving model & metrics
+Evaluation (ROC, confusion matrix, reports)
 
-Artifacts are exported as JSON/NumPy for dashboard use.
+Saving results and exporting artifacts
 
 Future Enhancements
 
-Integration with hospital PACS systems (DICOM workflow)
+PACS integration (DICOM workflow)
 
-Deployment on cloud platforms (AWS/GCP/Azure)
+Cloud deployment (AWS/GCP/Azure)
 
-Mobile-based inference app
+Lightweight mobile version
 
-Explainable AI using Grad-CAM heatmaps
+Explainable AI with Grad-CAM overlays
 
-Further multi-class segmentation (tumor boundary detection)
+Tumor segmentation (pixel-level)
 
 Acknowledgements
 
 Guide: Prof. Aurangazeb Khan
 
-Institution: CMR University, School of Science and Computer Studies
+Institution: CMR University, School of Science & Computer Studies
 
-Open-source contributors (TensorFlow, Keras, Flask, Bootstrap)
+Open-source community (TensorFlow, Flask, Bootstrap)
 
 License
 
-This project was developed as part of an academic capstone.
-For academic or research reuse, please cite appropriately and credit the author.
+This project is part of an academic capstone.
+For reuse or research purposes, please credit the author.
