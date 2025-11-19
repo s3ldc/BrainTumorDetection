@@ -46,7 +46,6 @@ history.json
 test_labels.npy, test_predictions.npy
 
 Repository Structure
-
 CAPSTONE_PROJECT/
 ├── MRI Images/
 │   ├── Training/
@@ -68,7 +67,6 @@ CAPSTONE_PROJECT/
 ├── test_labels.npy
 ├── test_predictions.npy
 └── README.md
-
 
 Tech Stack
 Deep Learning
